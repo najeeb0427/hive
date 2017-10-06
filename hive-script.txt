@@ -1,0 +1,20 @@
+REATE TABLE C AS
+SELECT 
+a.*,
+a.B/a.C as first,
+(a.M + a.N)/2 as second,
+a.A/(a.B/2) as third,
+CASE WHEN a.B = 0 THEN "NA" ELSE a.B/a.C END as fourth, 
+CASE WHEN a.E = 0 THEN 0 ELSE a.S + a.H END as fifth, 
+(a.A+a.B)/a.C as sixth,
+a.C/(a.A/100) as seventh
+a.uper_perf-b.upper_perf as lateral_length
+FROM 
+HDPI_HDR_0115 a JOIN HPDI_PRD_0115 b
+ON a.ENTITY_ID = b.ENTITY_ID;
+
+DROP TABLE B;
+CREATE TABLE B LIKE C;
+INSERT INTO B SELECT * FROM C;
+
+
