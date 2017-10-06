@@ -1,6 +1,19 @@
-REATE TABLE C AS
-SELECT 
-a.*,
+CREATE TABLE C AS
+SELECT
+X.B_COL_1,
+X.B_COL_2,
+X.A_COL_1
+X.first,
+X.second,
+X.third,
+X.fourth,
+X.third + X.fourth AS tenth,
+X.fourth * X.seventh AS eleventh
+FROM
+(SELECT 
+b.B_COL_1,
+b.B_COL_2,
+a.A_COL_1,
 a.B/a.C as first,
 (a.M + a.N)/2 as second,
 a.A/(a.B/2) as third,
@@ -11,10 +24,10 @@ a.C/(a.A/100) as seventh
 a.uper_perf-b.upper_perf as lateral_length
 FROM 
 HDPI_HDR_0115 a JOIN HPDI_PRD_0115 b
-ON a.ENTITY_ID = b.ENTITY_ID;
+ON a.ENTITY_ID = b.ENTITY_ID) X;
+
+
 
 DROP TABLE B;
 CREATE TABLE B LIKE C;
 INSERT INTO B SELECT * FROM C;
-
-
