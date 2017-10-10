@@ -1,0 +1,13 @@
+create table test1(id string,col1 int);
+insert into test1 values('1',100);
+insert into test1 values ('2',200);
+insert into test1 values ('3',900);
+insert into test1 values ('4',1200);
+
+
+
+select t.id,CASE WHEN V.col1 is null then t.col1 else t.col1 + v.col1 end as col1 from 
+(SELECT id,col1,ROW_NUMBER() OVER (Order by Id desc) AS RowNumber FROM test1) t 
+ left join 
+ (SELECT id,col1,ROW_NUMBER() OVER (Order by Id desc) AS RowNumber from test1) V
+ on t.RowNumber = V.RowNumber - 1;
