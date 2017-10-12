@@ -1,0 +1,6 @@
+
+select day(last_day(from_unixtime(unix_timestamp('2012-30-10' , 'yyyy-dd-MM'))));
+
+
+select from_unixtime(unix_timestamp(CAST(PROD_DATE AS STRING) , 'yyyy-dd-MM')) as PROD_DATE, day(last_day(from_unixtime(unix_timestamp(CAST(PROD_DATE AS STRING) , 'yyyy-dd-MM')))) AS TOTAL_DAYS;
+
