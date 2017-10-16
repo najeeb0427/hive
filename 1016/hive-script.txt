@@ -1,5 +1,7 @@
-select t.id, t.month,t.Total_Production,case when t.RowNumber < M.start_row then 0 when V.RowNumber is null then 1 else V.RowNumber-M.start_row+2 end as normalized_month,case when V.RowNumber is null then 1 else V.RowNumber+1 end as Expected_Month from
-(SELECT id,month,Total_Production,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(month,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM test2) t 
+
+create view intermediate_view as
+select t.id, t.month,t.liq,t.col1,t.col2,t.col3,t.col4,t.Total_Production,case when t.RowNumber < M.start_row then 0 when V.RowNumber is null then 1 else V.RowNumber-M.start_row+2 end as normalized_month,case when V.RowNumber is null then 1 else V.RowNumber+1 end as Expected_Month from
+(SELECT *,Total_Production,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(month,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM test2) t 
  left join 
  (SELECT id,month,Total_Production,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(month,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM test2) V
  on t.RowNumber = V.RowNumber + 1 and t.id = V.id
@@ -10,3 +12,11 @@ select t.id, t.month,t.Total_Production,case when t.RowNumber < M.start_row then
  ) M
  on t.id = M.id
  ;
+
+
+ select
+ case when normalized_month = 0 then 0 else cumulative_oil_mcf+liq as Bbls
+ from intermediate_view a
+ join other_table b on a.entity_id = b.entity_id ;
+
+
