@@ -1,0 +1,9 @@
+ outputMap += ("reported_cumulativetotal_boed" ->  (outputMap.get("reported_cumulativeoil_bbls").get.toDouble + ( outputMap.get("reported_cumulativegas_mcf").get.toDouble/6)).toString)
+  
+   outputMap += ("reported_cumulative_oilmix" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("reported_cumulativetotal_boed").get.toDouble.toString))
+    
+     outputMap += ("reported_cumulative_gor" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble / ( outputMap.get("reported_cumulativegas_mcf").get.toDouble * 1000).toString)) 
+      
+       outputMap += ("reported_cumulative_wtrcut" ->  (outputMap.get("reported_cumulativewtr").get.toDouble /  outputMap.get("reported_cumulativeoil_bbls").get.toDouble).toString)
+        
+	 outputMap += ("reported_lateral_adj_cumulative_oil_bbls_1000ft" ->  (outputMap.get("reported_cumulativeoil_bbls").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
