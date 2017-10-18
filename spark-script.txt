@@ -1,42 +1,54 @@
 val df = sqlContext.sql("select * from hdpi_production")
-df.rdd.map(x => (x.getInt(1),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
-val arr = x.getString(13).split("-")
+df.rdd.map(x => (x.getString(0),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
+val arr = x.getString(4).split("-")
 arr(0).concat(arr(2)).concat(arr(1))
 }
 })).map{x=> {
-var sum_reported_cumulativeoil_bbls = 0;
+var sum_reported_cumulativeoil_bbls:Double = 0;
 x._2.map{y => {
-val outputMap = scala.collection.mutable.HashMap.empty[String,Any]
-outputMap += ("api_no" -> y.getInt(0))
-outputMap += ("entity_id" -> y.getInt(1))
-outputMap += ("state" -> y.getString(2))
-outputMap += ("well_name" -> y.getString(3))
-outputMap += ("county" -> y.getString(4))
-outputMap += ("curr_oper_name" -> y.getString(5))
-outputMap += ("total_depth" -> y.getString(6))
-outputMap += ("latitude" -> y.getString(7))
-outputMap += ("longitude" -> y.getString(8))
-outputMap += ("first_prod_date" -> y.getString(9))
-outputMap += ("quarter" -> y.getString(10))
-outputMap += ("formation" -> y.getString(11))
-outputMap += ("prod_type" -> y.getString(12))
-outputMap += ("prod_date" -> y.getString(13))
-outputMap += ("total_prod" -> y.getString(14))
-outputMap += ("liq" -> y.getInt(15))
-outputMap += ("gas" -> y.getInt(16))
-outputMap += ("wtr" -> y.getInt(17))
-outputMap += ("days" -> y.getInt(18))
-outputMap += ("normalized_month" -> y.getInt(19))
-outputMap += ("reported_month" -> y.getInt(20))
-outputMap += ("basin" -> y.getString(21))
-outputMap += ("lateral_length" -> y.getString(22))
-outputMap += ("daily_oil_bbld" -> y.getInt(23))
-outputMap += ("daily_gas_mcfd" -> y.getInt(24))
-outputMap += ("daily_total_boed" -> y.getInt(25))
-outputMap += ("oil_mix_monthly" -> y.getInt(26))
-outputMap += ("gor_monthly" -> y.getInt(27))
-outputMap += ("water_cut_monthly" -> y.getInt(28))
+val outputMap = scala.collection.mutable.HashMap.empty[String,String]
+outputMap += ("entity_id" -> y.getString(0))
+outputMap += ("basin" -> y.getString(1))
+outputMap += ("well_type" -> y.getString(2))
+outputMap += ("quarter" -> y.getString(3))
+outputMap += ("prod_date" -> y.getString(4))
+outputMap += ("lateral_length" -> y.getString(5))
+outputMap += ("days" -> y.getString(6))
+outputMap += ("liq" -> y.getString(7))
+outputMap += ("gas" -> y.getString(8))
+outputMap += ("wtr" -> y.getString(9))
+outputMap += ("well_name" -> y.getString(10))
+outputMap += ("total_prod" -> y.getString(11))
+outputMap += ("daily_oil_bbld" -> y.getString(12))
+outputMap += ("daily_gas_boed" -> y.getString(13))
+outputMap += ("oil_mix_monthly" -> y.getString(14))
+outputMap += ("gor_monthly" -> y.getString(15))
+outputMap += ("water_cut" -> y.getString(16))
+outputMap += ("_monthly" -> y.getString(17))
+outputMap += ("prod_type" -> y.getString(18))
+outputMap += ("state" -> y.getString(19))
+outputMap += ("api_no" -> y.getString(20))
+outputMap += ("county" -> y.getString(21))
+outputMap += ("curr_oper_name" -> y.getString(22))
+outputMap += ("total_depth" -> y.getString(23))
+outputMap += ("latitude" -> y.getString(24))
+outputMap += ("longitude" -> y.getString(25))
+outputMap += ("first_prod_date" -> y.getString(26))
+outputMap += ("formation" -> y.getString(27))
+outputMap += ("normalized_month" -> y.getInt(29))
+outputMap += ("reported_month" -> y.getInt(30))
+if(outputMap.get("normalized_month").get.toInt == 0){
+	outputMap += ("reported_cumulativeoil_bbls" -> "0")
+	} else {
+		sum_reported_cumulativeoil_bbls = sum_reported_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
+			outputMap += ("reported_cumulativeoil_bbls" -> sum_reported_cumulativeoil_bbls.toString)	
+			}
 
-outputMap
-}}
-}}.foreach(println)
+			outputMap
+			}}
+			}}.foreach(println)
+
+
+
+
+
