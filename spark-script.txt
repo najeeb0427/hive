@@ -1,0 +1,42 @@
+val df = sqlContext.sql("select * from hdpi_production")
+df.rdd.map(x => (x.getInt(1),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
+val arr = x.getString(13).split("-")
+arr(0).concat(arr(2)).concat(arr(1))
+}
+})).map{x=> {
+var sum_reported_cumulativeoil_bbls = 0;
+x._2.map{y => {
+val outputMap = scala.collection.mutable.HashMap.empty[String,Any]
+outputMap += ("api_no" -> y.getInt(0))
+outputMap += ("entity_id" -> y.getInt(1))
+outputMap += ("state" -> y.getString(2))
+outputMap += ("well_name" -> y.getString(3))
+outputMap += ("county" -> y.getString(4))
+outputMap += ("curr_oper_name" -> y.getString(5))
+outputMap += ("total_depth" -> y.getString(6))
+outputMap += ("latitude" -> y.getString(7))
+outputMap += ("longitude" -> y.getString(8))
+outputMap += ("first_prod_date" -> y.getString(9))
+outputMap += ("quarter" -> y.getString(10))
+outputMap += ("formation" -> y.getString(11))
+outputMap += ("prod_type" -> y.getString(12))
+outputMap += ("prod_date" -> y.getString(13))
+outputMap += ("total_prod" -> y.getString(14))
+outputMap += ("liq" -> y.getInt(15))
+outputMap += ("gas" -> y.getInt(16))
+outputMap += ("wtr" -> y.getInt(17))
+outputMap += ("days" -> y.getInt(18))
+outputMap += ("normalized_month" -> y.getInt(19))
+outputMap += ("reported_month" -> y.getInt(20))
+outputMap += ("basin" -> y.getString(21))
+outputMap += ("lateral_length" -> y.getString(22))
+outputMap += ("daily_oil_bbld" -> y.getInt(23))
+outputMap += ("daily_gas_mcfd" -> y.getInt(24))
+outputMap += ("daily_total_boed" -> y.getInt(25))
+outputMap += ("oil_mix_monthly" -> y.getInt(26))
+outputMap += ("gor_monthly" -> y.getInt(27))
+outputMap += ("water_cut_monthly" -> y.getInt(28))
+
+outputMap
+}}
+}}.foreach(println)

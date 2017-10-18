@@ -1,6 +1,6 @@
 create view intermediate_view as
-select t.id, t.PROD_DATE,t.liq,t.cumulative_oil_mcf,t.Total_Production,case when t.RowNumber < M.start_row then 0 when V.RowNumber is null then 1 else V.RowNumber-M.start_row+2 end as NORMALIZED_MONTH,case when V.RowNumber is null then 1 else V.RowNumber+1 end as REPORTED_MONTH from
-(SELECT *,Total_Production,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(PROD_DATE,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM hdpi_newproduction6_0115) t 
+select t.id, t.PROD_DATE,t.Total_Production,case when t.RowNumber < M.start_row then 0 when V.RowNumber is null then 1 else V.RowNumber-M.start_row+2 end as NORMALIZED_MONTH,case when V.RowNumber is null then 1 else V.RowNumber+1 end as REPORTED_MONTH from
+(SELECT *,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(PROD_DATE,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM hdpi_newproduction6_0115) t 
  left join 
   (SELECT id,PROD_DATE,Total_Production,ROW_NUMBER() OVER (partition by id Order by from_unixtime(unix_timestamp(PROD_DATE,'yyyy-dd-MM'),'yyyy-MM-dd')) AS RowNumber FROM hdpi_newproduction6_0115) V
    on t.RowNumber = V.RowNumber + 1 and t.id = V.id
@@ -12,8 +12,3 @@ select t.id, t.PROD_DATE,t.liq,t.cumulative_oil_mcf,t.Total_Production,case when
 	 on t.id = M.id
 	  ;
 
-
-	   select
-	    case when NORMALIZED_MONTH = 0 then 0 else cumulative_oil_mcf+liq as Bbls
-	     from intermediate_view a
-	      ;
