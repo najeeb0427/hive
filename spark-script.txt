@@ -1,3 +1,4 @@
+import org.apache.spark.sql.types.StructType
 val df = sqlContext.sql("select * from hdpi_production")
 df.rdd.map(x => (x.getString(0),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
 val arr = x.getString(4).split("-")
@@ -5,6 +6,9 @@ arr(0).concat(arr(2)).concat(arr(1))
 }
 })).map{x=> {
 var sum_reported_cumulativeoil_bbls:Double = 0;
+var sum_reported_cumulativegas_mcf:Double = 0;
+var sum_reported_cumulativewtr:Double = 0;
+
 x._2.map{y => {
 val outputMap = scala.collection.mutable.HashMap.empty[String,String]
 outputMap += ("entity_id" -> y.getString(0))
@@ -20,11 +24,11 @@ outputMap += ("wtr" -> y.getString(9))
 outputMap += ("well_name" -> y.getString(10))
 outputMap += ("total_prod" -> y.getString(11))
 outputMap += ("daily_oil_bbld" -> y.getString(12))
-outputMap += ("daily_gas_boed" -> y.getString(13))
-outputMap += ("oil_mix_monthly" -> y.getString(14))
-outputMap += ("gor_monthly" -> y.getString(15))
-outputMap += ("water_cut" -> y.getString(16))
-outputMap += ("_monthly" -> y.getString(17))
+outputMap += ("daily_oil_mcfd" -> y.getString(13))
+outputMap += ("daily_gas_boed" -> y.getString(14))
+outputMap += ("oil_mix_monthly" -> y.getString(15))
+outputMap += ("gor_monthly" -> y.getString(16))
+outputMap += ("water_cut_monthly" -> y.getString(17))
 outputMap += ("prod_type" -> y.getString(18))
 outputMap += ("state" -> y.getString(19))
 outputMap += ("api_no" -> y.getString(20))
@@ -35,18 +39,47 @@ outputMap += ("latitude" -> y.getString(24))
 outputMap += ("longitude" -> y.getString(25))
 outputMap += ("first_prod_date" -> y.getString(26))
 outputMap += ("formation" -> y.getString(27))
-outputMap += ("normalized_month" -> y.getInt(29))
-outputMap += ("reported_month" -> y.getInt(30))
+outputMap += ("normalized_month" -> y.getInt(29).toString)
+outputMap += ("reported_month" -> y.getInt(30).toString)
 if(outputMap.get("normalized_month").get.toInt == 0){
-	outputMap += ("reported_cumulativeoil_bbls" -> "0")
-	} else {
-		sum_reported_cumulativeoil_bbls = sum_reported_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
-			outputMap += ("reported_cumulativeoil_bbls" -> sum_reported_cumulativeoil_bbls.toString)	
-			}
+ outputMap += ("reported_cumulativeoil_bbls" -> "0")
+ } else {
+  sum_reported_cumulativeoil_bbls = sum_reported_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
+   outputMap += ("reported_cumulativeoil_bbls" -> sum_reported_cumulativeoil_bbls.toString) 
+   }
+   if(outputMap.get("normalized_month").get.toInt == 0){
+    outputMap += ("reported_cumulativegas_mcf" -> "0")
+    } else {
+     sum_reported_cumulativegas_mcf = sum_reported_cumulativegas_mcf + outputMap.get("gas").get.toDouble
+      outputMap += ("reported_cumulativegas_mcf" -> sum_reported_cumulativegas_mcf.toString) 
+      }
+      if(outputMap.get("normalized_month").get.toInt == 0){
+       outputMap += ("reported_cumulativewtr" -> "0")
+       } else {
+        sum_reported_cumulativewtr = sum_reported_cumulativewtr + outputMap.get("gas").get.toDouble
+	 outputMap += ("reported_cumulativewtr" -> sum_reported_cumulativewtr.toString) 
+	 }
+	  outputMap += ("reported_cumulativetotal_boed" ->  outputMap.get("reported_cumulativeoil_bbls").get.toDouble + ( outputMap.get("reported_cumulativegas_mcf").get.toDouble/6)) 
+	   
+	    outputMap += ("reported_cumulative_oilmix" ->  outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("reported_cumulativetotal_boed").get.toDouble)
+	     
+	      outputMap += ("reported_cumulative_gor" ->  outputMap.get("reported_cumulativegas_mcf").get.toDouble / ( outputMap.get("reported_cumulativegas_mcf").get.toDouble * 1000)) 
+	       
+	        outputMap += ("reported_cumulative_wtrcut" ->  outputMap.get("reported_cumulativewtr").get.toDouble /  outputMap.get("reported_cumulativeoil_bbls").get.toDouble)
+		 
+		  outputMap += ("reported_lateral_adj_cumulative_oil_bbls_1000ft" ->  outputMap.get("reported_cumulativeoil_bbls").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000)
+		   
+		   outputMap
+		   }}
+		   }}.foreach(println)
 
-			outputMap
-			}}
-			}}.foreach(println)
+
+
+
+
+
+
+
 
 
 
