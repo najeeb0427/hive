@@ -1,0 +1,8 @@
+val df = sqlContext.sql("select * from hdpi_production")
+val rowrdd = df.rdd.map(x => (x.getString(0),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
+val arr = x.getString(4).split("-")
+arr(0).concat(arr(2)).concat(arr(1))
+}
+})).foreach(println)
+
+
