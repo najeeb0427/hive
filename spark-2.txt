@@ -1,11 +1,8 @@
 import org.apache.spark.sql.types.StructType
 import sqlContext.implicits._
 import org.apache.spark.sql.Row
-
-val outputSchema = new StructType().add("entity_id","string").add("basin","string").add("well_type","string").add("quarter","string").add("prod_date","string").add("lateral_length","string").add("days","string").add("liq","string").add("gas","string").add("wtr","string").add("well_name","string").add("total_prod","string").add("daily_oil_bbld","string").add("daily_gas_mcfd","string").add("daily_gas_boed","string").add("oil_mix_monthly","string").add("gor_monthly","string").add("water_cut_monthly","string").add("prod_type","string").add("state","string").add("api_no","string").add("county","string").add("curr_oper_name","string").add("total_depth","string").add("latitude","string").add("longitude","string").add("first_prod_date","string").add("formation","string").add("normalized_month","string").add("reported_month","string").add("basin","string").add("lateral_length","string").add("daily_oil_bbld","string").add("daily_gas_mcfd","string").add("daily_total_boed","string").add("oil_mix_monthly","string").add("gor_monthly","string").add("water_cut_monthly","string").add("reported_cumulativeoil_bbls","string").add("reported_cumulativegas_mcf","string").add("reported_cumulativewtr","string").add("reported_cumulativetotal_boed","string").add("reported_cumulative_oilmix","string").add("reported_cumulative_gor","string").add("reported_cumulative_wtrcut","string").add("reported_lateral_adj_cumulative_oil_bbls_1000ft","string").add("reported_lateral_adj_cumulative_gas_mcf_1000ft","string").add("reported_lateral_adj_cumulative_total_boe_1000ft","string").add("normalized_cumulativeoil_bbls","string").add("normalized_cumulativegas_mcf","string").add("normalized_cumulativewtr","string").add("normalized_cumulativetotal_boed","string").add("normalized_cumulative_oilmix","string").add("normalized_cumulative_gor","string").add("normalized_cumulative_wtrcut","string").add("normalized_lateral_adj_cumulative_oil_bbls_1000ft","string").add("normalized_lateral_adj_cumulative_gas_mcf_1000ft","string").add("normalized_lateral_adj_cumulative_total_boe_1000ft","string")
-
+val outputSchema = new StructType().add("entity_id","string").add("basin","string").add("well_type","string").add("quarter","string").add("prod_date","string").add("lateral_length","string").add("days","string").add("liq","string").add("gas","string").add("wtr","string").add("well_name","string").add("total_prod","string").add("daily_oil_bbld","string").add("daily_gas_mcfd","string").add("daily_gas_boed","string").add("oil_mix_monthly","string").add("gor_monthly","string").add("water_cut_monthly","string").add("prod_type","string").add("state","string").add("api_no","string").add("county","string").add("curr_oper_name","string").add("total_depth","string").add("latitude","string").add("longitude","string").add("first_prod_date","string").add("formation","string").add("normalized_month","string").add("reported_month","string").add("basin","string").add("daily_total_boed","string").add("reported_cumulativeoil_bbls","string").add("reported_cumulativegas_mcf","string").add("reported_cumulativewtr","string").add("reported_cumulativetotal_boed","string").add("reported_cumulative_oilmix","string").add("reported_cumulative_gor","string").add("reported_cumulative_wtrcut","string").add("reported_lateral_adj_cumulative_oil_bbls_1000ft","string").add("reported_lateral_adj_cumulative_gas_mcf_1000ft","string").add("reported_lateral_adj_cumulative_total_boe_1000ft","string").add("normalized_cumulativeoil_bbls","string").add("normalized_cumulativegas_mcf","string").add("normalized_cumulativewtr","string").add("normalized_cumulativetotal_boed","string").add("normalized_cumulative_oilmix","string").add("normalized_cumulative_gor","string").add("normalized_cumulative_wtrcut","string").add("normalized_lateral_adj_cumulative_oil_bbls_1000ft","string").add("normalized_lateral_adj_cumulative_gas_mcf_1000ft","string").add("normalized_lateral_adj_cumulative_total_boe_1000ft","string")
 val fields = outputSchema.fields.map(x => x.name)
-
 
 val df = sqlContext.sql("select * from hdpi_production")
 val rowrdd = df.rdd.map(x => (x.getString(0),x)).groupByKey.mapValues(iter => iter.toList.sortBy({x=>{
@@ -16,10 +13,12 @@ arr(0).concat(arr(2)).concat(arr(1))
 var sum_reported_cumulativeoil_bbls:Double = 0;
 var sum_reported_cumulativegas_mcf:Double = 0;
 var sum_reported_cumulativewtr:Double = 0;
-
 var sum_normalized_cumulativeoil_bbls:Double = 0;
 var sum_normalized_cumulativegas_mcf:Double = 0;
 var sum_normalized_cumulativewtr:Double = 0;
+var normalized_month = 0
+var normalized_indicator = false
+var reported_month = 0
 
 x._2.map{y => {
 val outputMap = scala.collection.mutable.HashMap.empty[String,String]
@@ -51,85 +50,88 @@ outputMap += ("latitude" -> y.getString(24))
 outputMap += ("longitude" -> y.getString(25))
 outputMap += ("first_prod_date" -> y.getString(26))
 outputMap += ("formation" -> y.getString(27))
-outputMap += ("normalized_month" -> y.getInt(29).toString)
-outputMap += ("reported_month" -> y.getInt(30).toString)
-
-
-if(outputMap.get("reported_month").get.toInt == 0){
- outputMap += ("reported_cumulativeoil_bbls" -> "0")
- } else {
-  sum_reported_cumulativeoil_bbls = sum_reported_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
-   outputMap += ("reported_cumulativeoil_bbls" -> sum_reported_cumulativeoil_bbls.toString) 
-   }
-   if(outputMap.get("reported_month").get.toInt == 0){
-    outputMap += ("reported_cumulativegas_mcf" -> "0")
-    } else {
-     sum_reported_cumulativegas_mcf = sum_reported_cumulativegas_mcf + outputMap.get("gas").get.toDouble
-      outputMap += ("reported_cumulativegas_mcf" -> sum_reported_cumulativegas_mcf.toString) 
-      }
-      if(outputMap.get("reported_month").get.toInt == 0){
-       outputMap += ("reported_cumulativewtr" -> "0")
-       } else {
-        sum_reported_cumulativewtr = sum_reported_cumulativewtr + outputMap.get("gas").get.toDouble
-	 outputMap += ("reported_cumulativewtr" -> sum_reported_cumulativewtr.toString) 
+//outputMap += ("normalized_month" -> y.getInt(29).toString)
+//outputMap += ("reported_month" -> y.getInt(30).toString)
+if(outputMap.get("total_prod").get.toDouble>15000 || normalized_indicator){
+   normalized_month = normalized_month + 1;
+      normalized_indicator = true
+         outputMap += ("normalized_month" -> normalized_month.toString)
 	 }
+	 reported_month=reported_month+1
+	 outputMap += ("reported_month" -> reported_month.toString)
+	 if(outputMap.get("reported_month").get.toInt == 0){
+	  outputMap += ("reported_cumulativeoil_bbls" -> "0")
+	  } else {
+	   sum_reported_cumulativeoil_bbls = sum_reported_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
+	    outputMap += ("reported_cumulativeoil_bbls" -> sum_reported_cumulativeoil_bbls.toString) 
+	    }
+	    if(outputMap.get("reported_month").get.toInt == 0){
+	     outputMap += ("reported_cumulativegas_mcf" -> "0")
+	     } else {
+	      sum_reported_cumulativegas_mcf = sum_reported_cumulativegas_mcf + outputMap.get("gas").get.toDouble
+	       outputMap += ("reported_cumulativegas_mcf" -> sum_reported_cumulativegas_mcf.toString) 
+	       }
+	       if(outputMap.get("reported_month").get.toInt == 0){
+	        outputMap += ("reported_cumulativewtr" -> "0")
+		} else {
+		 sum_reported_cumulativewtr = sum_reported_cumulativewtr + outputMap.get("gas").get.toDouble
+		  outputMap += ("reported_cumulativewtr" -> sum_reported_cumulativewtr.toString) 
+		  }
 
-	  outputMap += ("reported_cumulativetotal_boed" ->  (outputMap.get("reported_cumulativeoil_bbls").get.toDouble + ( outputMap.get("reported_cumulativegas_mcf").get.toDouble/6)).toString)
-	   
-	    outputMap += ("reported_cumulative_oilmix" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("reported_cumulativetotal_boed").get.toDouble).toString)
-	     
-	      outputMap += ("reported_cumulative_gor" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble / ( outputMap.get("reported_cumulativegas_mcf").get.toDouble * 1000)).toString) 
-	       
-	        outputMap += ("reported_cumulative_wtrcut" ->  (outputMap.get("reported_cumulativewtr").get.toDouble /  outputMap.get("reported_cumulativeoil_bbls").get.toDouble).toString)
-		 
+		  outputMap += ("reported_cumulativetotal_boed" ->  (outputMap.get("reported_cumulativeoil_bbls").get.toDouble + ( outputMap.get("reported_cumulativegas_mcf").get.toDouble/6)).toString)
+
+		  outputMap += ("reported_cumulative_oilmix" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("reported_cumulativetotal_boed").get.toDouble).toString)
+
+		  outputMap += ("reported_cumulative_gor" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble / ( outputMap.get("reported_cumulativegas_mcf").get.toDouble * 1000)).toString) 
+
+		  outputMap += ("reported_cumulative_wtrcut" ->  (outputMap.get("reported_cumulativewtr").get.toDouble /  outputMap.get("reported_cumulativeoil_bbls").get.toDouble).toString)
+
 		  outputMap += ("reported_lateral_adj_cumulative_oil_bbls_1000ft" ->  (outputMap.get("reported_cumulativeoil_bbls").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
-		   
-		     outputMap += ("reported_lateral_adj_cumulative_gas_mcf_1000ft" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
-		       
-		         outputMap += ("reported_lateral_adj_cumulative_total_boe_1000ft" ->  (outputMap.get("reported_cumulativetotal_boed").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)  
-			   
-			     if(outputMap.get("normalized_month").get.toInt == 0){
-			      outputMap += ("normalized_cumulativeoil_bbls" -> "0")
-			      } else {
-			       sum_normalized_cumulativeoil_bbls = sum_normalized_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
-			        outputMap += ("normalized_cumulativeoil_bbls" -> sum_normalized_cumulativeoil_bbls.toString) 
-				}
-				if(outputMap.get("normalized_month").get.toInt == 0){
-				 outputMap += ("normalized_cumulativegas_mcf" -> "0")
-				 } else {
-				  sum_normalized_cumulativegas_mcf = sum_normalized_cumulativegas_mcf + outputMap.get("gas").get.toDouble
-				   outputMap += ("normalized_cumulativegas_mcf" -> sum_normalized_cumulativegas_mcf.toString) 
-				   }
-				   if(outputMap.get("normalized_month").get.toInt == 0){
-				    outputMap += ("normalized_cumulativewtr" -> "0")
-				    } else {
-				     sum_normalized_cumulativewtr = sum_normalized_cumulativewtr + outputMap.get("gas").get.toDouble
-				      outputMap += ("normalized_cumulativewtr" -> sum_normalized_cumulativewtr.toString) 
-				      }
 
-				       outputMap += ("normalized_cumulativetotal_boed" ->  (outputMap.get("normalized_cumulativeoil_bbls").get.toDouble + ( outputMap.get("normalized_cumulativegas_mcf").get.toDouble/6)).toString)
-				        
-					 outputMap += ("normalized_cumulative_oilmix" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble /  outputMap.get("normalized_cumulativetotal_boed").get.toDouble).toString)
-					  
-					   outputMap += ("normalized_cumulative_gor" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble / ( outputMap.get("normalized_cumulativegas_mcf").get.toDouble * 1000)).toString) 
-					    
-					     outputMap += ("normalized_cumulative_wtrcut" ->  (outputMap.get("normalized_cumulativewtr").get.toDouble /  outputMap.get("normalized_cumulativeoil_bbls").get.toDouble).toString)
-					      
-					       outputMap += ("normalized_lateral_adj_cumulative_oil_bbls_1000ft" ->  (outputMap.get("normalized_cumulativeoil_bbls").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
-					        
-						  outputMap += ("normalized_lateral_adj_cumulative_gas_mcf_1000ft" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
-						    
-						      outputMap += ("normalized_lateral_adj_cumulative_total_boe_1000ft" ->  (outputMap.get("normalized_cumulativetotal_boed").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)  
-						        
-							 
-							  
-							   val values = fields.map(x => outputMap.getOrElse(x,'0'))
-							    Row(values:_*)
-							    }}
-							    }}
+		  outputMap += ("reported_lateral_adj_cumulative_gas_mcf_1000ft" ->  (outputMap.get("reported_cumulativegas_mcf").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
 
-							    val outputDF = sqlContext.createDataframe(rowrdd,outputSchema)
-							    outputDF.saveAsTable("outputTable")
-							    ;
+		  outputMap += ("reported_lateral_adj_cumulative_total_boe_1000ft" ->  (outputMap.get("reported_cumulativetotal_boed").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)  
+
+		  if(outputMap.get("normalized_month").get.toInt == 0){
+		   outputMap += ("normalized_cumulativeoil_bbls" -> "0")
+		   } else {
+		    sum_normalized_cumulativeoil_bbls = sum_normalized_cumulativeoil_bbls + outputMap.get("liq").get.toDouble
+		     outputMap += ("normalized_cumulativeoil_bbls" -> sum_normalized_cumulativeoil_bbls.toString) 
+		     }
+		     if(outputMap.get("normalized_month").get.toInt == 0){
+		      outputMap += ("normalized_cumulativegas_mcf" -> "0")
+		      } else {
+		       sum_normalized_cumulativegas_mcf = sum_normalized_cumulativegas_mcf + outputMap.get("gas").get.toDouble
+		        outputMap += ("normalized_cumulativegas_mcf" -> sum_normalized_cumulativegas_mcf.toString) 
+			}
+			if(outputMap.get("normalized_month").get.toInt == 0){
+			 outputMap += ("normalized_cumulativewtr" -> "0")
+			 } else {
+			  sum_normalized_cumulativewtr = sum_normalized_cumulativewtr + outputMap.get("gas").get.toDouble
+			   outputMap += ("normalized_cumulativewtr" -> sum_normalized_cumulativewtr.toString) 
+			   }
+
+			   outputMap += ("normalized_cumulativetotal_boed" ->  (outputMap.get("normalized_cumulativeoil_bbls").get.toDouble + ( outputMap.get("normalized_cumulativegas_mcf").get.toDouble/6)).toString)
+
+			   outputMap += ("normalized_cumulative_oilmix" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble /  outputMap.get("normalized_cumulativetotal_boed").get.toDouble).toString)
+
+			   outputMap += ("normalized_cumulative_gor" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble / ( outputMap.get("normalized_cumulativegas_mcf").get.toDouble * 1000)).toString) 
+
+			   outputMap += ("normalized_cumulative_wtrcut" ->  (outputMap.get("normalized_cumulativewtr").get.toDouble /  outputMap.get("normalized_cumulativeoil_bbls").get.toDouble).toString)
+
+			   outputMap += ("normalized_lateral_adj_cumulative_oil_bbls_1000ft" ->  (outputMap.get("normalized_cumulativeoil_bbls").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
+			    
+			    outputMap += ("normalized_lateral_adj_cumulative_gas_mcf_1000ft" ->  (outputMap.get("normalized_cumulativegas_mcf").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)
+
+			    outputMap += ("normalized_lateral_adj_cumulative_total_boe_1000ft" ->  (outputMap.get("normalized_cumulativetotal_boed").get.toDouble /  outputMap.get("lateral_length").get.toDouble / 1000).toString)  
+			      
+			      val values = fields.map(x => outputMap.getOrElse(x,'0'))
+			      Row(values:_*)
+			      }}
+			      }}
+
+			      val outputDF = sqlContext.createDataFrame(rowrdd,outputSchema)
+			      outputDF.saveAsTable("outputTable")
+			      ;
 
 
