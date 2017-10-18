@@ -1,7 +1,7 @@
 import org.apache.spark.sql.types.StructType
 import sqlContext.implicits._
 import org.apache.spark.sql.Row
-val outputSchema = new StructType().add("entity_id","string").add("basin","string").add("well_type","string").add("quarter","string").add("prod_date","string").add("lateral_length","string").add("days","string").add("liq","string").add("gas","string").add("wtr","string").add("well_name","string").add("total_prod","string").add("daily_oil_bbld","string").add("daily_gas_mcfd","string").add("daily_gas_boed","string").add("oil_mix_monthly","string").add("gor_monthly","string").add("water_cut_monthly","string").add("prod_type","string").add("state","string").add("api_no","string").add("county","string").add("curr_oper_name","string").add("total_depth","string").add("latitude","string").add("longitude","string").add("first_prod_date","string").add("formation","string").add("normalized_month","string").add("reported_month","string").add("basin","string").add("daily_total_boed","string").add("reported_cumulativeoil_bbls","string").add("reported_cumulativegas_mcf","string").add("reported_cumulativewtr","string").add("reported_cumulativetotal_boed","string").add("reported_cumulative_oilmix","string").add("reported_cumulative_gor","string").add("reported_cumulative_wtrcut","string").add("reported_lateral_adj_cumulative_oil_bbls_1000ft","string").add("reported_lateral_adj_cumulative_gas_mcf_1000ft","string").add("reported_lateral_adj_cumulative_total_boe_1000ft","string").add("normalized_cumulativeoil_bbls","string").add("normalized_cumulativegas_mcf","string").add("normalized_cumulativewtr","string").add("normalized_cumulativetotal_boed","string").add("normalized_cumulative_oilmix","string").add("normalized_cumulative_gor","string").add("normalized_cumulative_wtrcut","string").add("normalized_lateral_adj_cumulative_oil_bbls_1000ft","string").add("normalized_lateral_adj_cumulative_gas_mcf_1000ft","string").add("normalized_lateral_adj_cumulative_total_boe_1000ft","string")
+val outputSchema = new StructType().add("entity_id","string").add("basin","string").add("well_type","string").add("quarter","string").add("prod_date","string").add("lateral_length","string").add("days","string").add("liq","string").add("gas","string").add("wtr","string").add("well_name","string").add("total_prod","string").add("daily_oil_bbld","string").add("daily_gas_mcfd","string").add("daily_gas_boed","string").add("oil_mix_monthly","string").add("gor_monthly","string").add("water_cut_monthly","string").add("prod_type","string").add("state","string").add("api_no","string").add("county","string").add("curr_oper_name","string").add("total_depth","string").add("latitude","string").add("longitude","string").add("first_prod_date","string").add("formation","string").add("normalized_month","string").add("reported_month","string").add("daily_total_boed","string").add("reported_cumulativeoil_bbls","string").add("reported_cumulativegas_mcf","string").add("reported_cumulativewtr","string").add("reported_cumulativetotal_boed","string").add("reported_cumulative_oilmix","string").add("reported_cumulative_gor","string").add("reported_cumulative_wtrcut","string").add("reported_lateral_adj_cumulative_oil_bbls_1000ft","string").add("reported_lateral_adj_cumulative_gas_mcf_1000ft","string").add("reported_lateral_adj_cumulative_total_boe_1000ft","string").add("normalized_cumulativeoil_bbls","string").add("normalized_cumulativegas_mcf","string").add("normalized_cumulativewtr","string").add("normalized_cumulativetotal_boed","string").add("normalized_cumulative_oilmix","string").add("normalized_cumulative_gor","string").add("normalized_cumulative_wtrcut","string").add("normalized_lateral_adj_cumulative_oil_bbls_1000ft","string").add("normalized_lateral_adj_cumulative_gas_mcf_1000ft","string").add("normalized_lateral_adj_cumulative_total_boe_1000ft","string")
 val fields = outputSchema.fields.map(x => x.name)
 
 val df = sqlContext.sql("select * from hdpi_production")
@@ -19,6 +19,8 @@ var sum_normalized_cumulativewtr:Double = 0;
 var normalized_month = 0
 var normalized_indicator = false
 var reported_month = 0
+
+val peakProduction = x._2.map(y => y.getString(11).toDouble).max
 
 x._2.map{y => {
 val outputMap = scala.collection.mutable.HashMap.empty[String,String]
@@ -52,7 +54,7 @@ outputMap += ("first_prod_date" -> y.getString(26))
 outputMap += ("formation" -> y.getString(27))
 //outputMap += ("normalized_month" -> y.getInt(29).toString)
 //outputMap += ("reported_month" -> y.getInt(30).toString)
-if(outputMap.get("total_prod").get.toDouble>15000 || normalized_indicator){
+if(outputMap.get("total_prod").get.toDouble>15000 || outputMap.get("total_prod").get.toDouble > (peakProduction*0.7) || normalized_indicator){
    normalized_month = normalized_month + 1;
       normalized_indicator = true
          outputMap += ("normalized_month" -> normalized_month.toString)
