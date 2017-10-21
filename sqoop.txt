@@ -1,0 +1,11 @@
+sqoop import --connect "jdbc:sqlserver://servername;database=demo" \
+   --username user  \
+      --password pass \
+         --driver   com.microsoft.sqlserver.jdbc.SQLServerDriver \
+	    --table    "dbo.customer" \
+	    	--columns id,name 
+			--target-dir /user/cloudera/ingest/raw/customers 
+				--fields-terminated-by "," 
+					--hive-import 
+						--create-hive-table 
+							--hive-table sqoop_workspace.customers
