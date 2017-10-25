@@ -1,0 +1,24 @@
+if(apinumberLength == 10 ){
+val api = apinumber + "0000"
+outputMap += ("apinumber_FF" -> api)
+}else if(apinumberLength == 11 ){
+val api = apinumber + "000"
+outputMap += ("apinumber_FF" -> api)
+}else if(apinumberLength == 12 ){
+val api = apinumber + "00"
+outputMap += ("apinumber_FF" -> api)
+}else if(apinumberLength == 13 ){
+val api = apinumber + "0"
+outputMap += ("apinumber_FF" -> api)
+}
+
+val api_minus = apinumber + "-"
+if(apinumberLength == 2 ){
+outputMap += ("apinumber_NN" ->api_minus)
+}else if(apinumberLength == 5 ){
+outputMap += ("apinumber_NN" ->api_minus)
+}else if(apinumberLength == 10 ){
+outputMap += ("apinumber_NN" -> api_minus)
+}else if(apinumberLength == 12 ){
+outputMap += ("apinumber_NN" -> api_minus)
+}
