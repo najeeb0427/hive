@@ -1,0 +1,26 @@
+val Proppant_percent = outputMap.get("Proppant_percent").get.asInstanceOf[Double]
+val Water_percent = outputMap.get("Water_percent").get.asInstanceOf[Double]
+val water_sub_100 = 100.0 - Water_percent
+val proppant_sub_100 = 100.0 - Proppant_percent
+
+if(Proppant_percent == 0 || Proppant_percent > 30 ){
+	if(Water_percent>70){
+			outputMap += ("Proppant_Adj" -> water_sub_100)		
+				}else{
+						outputMap += ("Proppant_Adj" -> 0)	
+							}
+
+							}else{
+								outputMap += ("Proppant_Adj" -> Proppant_percent)	
+								}
+
+								if(Water_percent == 0 || Water_percent < 70 ){
+									if(Proppant_percent<30 && Proppant_percent>0){
+											outputMap += ("Water_Adj" -> proppant_sub_100)		
+												}else{
+														outputMap += ("Water_Adj" -> 0)	
+															}
+
+															}else{
+																outputMap += ("Water_Adj" -> Water_percent)	
+																}
