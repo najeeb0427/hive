@@ -1,0 +1,9 @@
+
+
+
+insert into Registryupload
+select F.* from
+Frac_focus_data_query3 F
+join
+(select apinumber,max(job_Start_date) as max_job_Start_date ,max(proppant_adj) as max_proppant_adj,max(upload_key) as upload_key from Frac_focus_data_query3 group by apinumber) M
+ON F.apinumber = M.apinumber AND (F.job_Start_date = M.max_job_Start_date or F.proppant_adj = M.proppant_adj or M.upload_key = F.upload_key)

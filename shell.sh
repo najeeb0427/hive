@@ -1,23 +1,27 @@
 #!/bin/bash
 
-d=`echo $(date +%Y-%m-%d-%H-%M-%s`
-url="http://pathinput"
-directory_name=<directory_name>
+d=`echo $(date +%Y-%m)`
+url="http://fracfocusdata.org/digitaldownload/fracfocuscsv.zip"
 hdfs_path="/user/data/"
 
-mkdir ${d}
-cd ${d}
-wget url
-unzip ${d}.zip
-hadoop fs -mkdir ${hdfs_path}/${d}
-hadoop fs -put *.csv ${hdfs_path}/${d}
+mkdir -p /tmp/FracFocus_Data/${d}
 
-hive -hiveconf path=${hdfs_path}/${d} -f hive_script.hql
+cd /tmp/FracFocus_Data/${d}
+if [ -f /tmp/FracFocus_Data/${d}/_DONE ]
+then
+	        echo "Done File Found. Skippig wget"
+		        unzip /tmp/FracFocus_Data/${d}/fracfocuscsv.zip
+		else
+			        rm -rf /tmp/FracFocus_Data/${d}/*
+				        wget $url
+					        if [ $? -eq 0 ]
+							        then
+									                echo "File Download Success."
+											                touch /tmp/FracFocus_Data/${d}/_DONE
+													        else
+															                echo "File download Failed. Exiting"
+																	        fi
+																	fi
 
-----------------------------
-
-hive_script.hql
------------------------------------------
-
-LOAD DATA INPATH ${hiveconf:path}/* into table <tablename>
---rest of hive script------
+																	hadoop fs -mkdir ${hdfs_path}/${d}
+																	hadoop fs -put /tmp/FracFocus_Data/${d}/*.csv ${hdfs_path}/${d}
