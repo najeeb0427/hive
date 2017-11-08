@@ -44,3 +44,4 @@ fi
 
 hadoop fs -mkdir ${HDFS_BASE_PATH}/${d}
 hadoop fs -put ${LOCAL_BASE_PATH}/${d}/*.csv ${HDFS_BASE_PATH}/${d}
+hive -hiveconf table_1="t1" -hiveconf table_2="t2"  -f hive_script.hql
