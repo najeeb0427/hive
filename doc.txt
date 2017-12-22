@@ -1,0 +1,33 @@
+We will use RDD if we are using Spark 1.6 and datasets if we are using spark 2 . For our output, we will use parquet or ORC format as they are columnar store which is suitable for large width table and has less overhead in handling lots of nulls as compared to text format.
+
+Algorithm for spark 1.6 
+
+1.       Read ghcnd-station.txt file to an RDD and do a map transformation which split the lines by tab and create a pair RDD as below -
+
+(id,(latitude,longitude))
+
+ 
+
+ 2.       Read ghcnd_hcz.tar.gz to an RDD and Do a map transformation which uses string substring function to get the desired values and create a pair RDD as below 
+
+ (id,(yyyy,mm,Element,dd1,dd2,dd3,dd4,dd5,dd6.......................dd31))
+
+  
+
+  3.       Inner Joining both RDDs assuming each element have its corresponding station id(we will change join type if this is not the case).
+
+  4.       Do a map on above joined RDD and again create a pair RDD as below 
+
+  ((ID,yyyy,mm) , (latitude, longitude,Element,dd1,dd2,dd3,dd4,dd5,dd6.......................dd31))
+
+  5.       Do a group by key on RDD created in above step, and apply a flat map operation.
+
+  As an input to flat map operation we will do following 
+
+  ·       Iterate on each list we got from the grouped data and flatten it.
+
+  ·       Add the rows in array for each date for the particular month.
+
+  ·       Return the array.
+
+  6.       Convert the RDD to dataframe and save to parquet or ORC format.
