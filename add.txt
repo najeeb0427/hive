@@ -1,0 +1,18 @@
+
+    val flatted_value = grouped.flatMap {
+      x => {
+        // Defining values Map which will have Element name as Key and list of values for a particular month as value
+        val valuesMap = scala.collection.mutable.Map[String, IndexedSeq[String]]()
+        x._2.foreach(y => valuesMap += (y._1 -> y._2))
+        import java.util.Calendar
+        import java.util.GregorianCalendar
+        val weekMap = Map(1 -> Calendar.JANUARY,2 -> Calendar.FEBRUARY)
+        val mycal = new GregorianCalendar(x._1._2.toInt, weekMap.getOrElse(x._1._3.toInt,Calendar.JANUARY), 1)
+        val daysInMonth = mycal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
+        // Looping from 1 to 31 which will act as dates in the output
+        1 to daysInMonth map { y =>
+          // Creating the output row String
+          (
+            // Adding ID
+            x._1._1.concat(",")
