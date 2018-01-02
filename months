@@ -1,0 +1,3 @@
+        val weekMap = Map(1 -> Calendar.JANUARY,2 -> Calendar.FEBRUARY,3 -> Calendar.MARCH,
+          4 -> Calendar.APRIL,5 -> Calendar.MAY,6 -> Calendar.JUNE,7 -> Calendar.JULY,8 -> Calendar.AUGUST,
+          9 -> Calendar.SEPTEMBER,10 -> Calendar.OCTOBER,11 -> Calendar.NOVEMBER,12 -> Calendar.DECEMBER)
