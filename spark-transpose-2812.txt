@@ -1,77 +1,8 @@
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkConf
-
-
-object ExceStructRdd {
-  val NULL_VALUE = "\\N";
-  val format = new java.text.SimpleDateFormat("dd-MM-yyyy")
-  val OUTPUT_PATH = "output"
-  val INPUT_STATION_FILE = "C:\\Users\\user\\Pictures\\panel\\ghcnd-stations.txt"
-  val INPUT_DLY_FILE = "C:\\Users\\user\\Pictures\\panel\\USC00011084.dly.txt"
-  val UNKNOWN_INPUT_VALUE = "9999"
-
-  //defining a function which give element name,value. if map contain("-9999") or Null it return Null else element value for a particular day
-
-  def getValue(elementName:String,map:scala.collection.mutable.Map[String, IndexedSeq[String]],day:Int):String= {
-    if (!map.contains(elementName)) return NULL_VALUE
-    else map.get(elementName) match {
-      case Some(s) => return if (s(day).equals(UNKNOWN_INPUT_VALUE)) NULL_VALUE else s(day)
-      case None => return NULL_VALUE
-    }
-  }
-
-  //defining a function for celTemp column and fhTemp column
-  def getTemperatures(elementName:String,map:scala.collection.mutable.Map[String, IndexedSeq[String]],day:Int):String={
-    if (!map.contains(elementName)) return NULL_VALUE
-    else map.get(elementName) match {
-      case Some(s) => val temp = s(day)
-        if(!temp.equals(UNKNOWN_INPUT_VALUE)) {
-          // Divinding By 10 to get the tempretures in celsius
-          val celTemp = temp.toDouble / 10
-          import java.text.DecimalFormat
-          val dec = new DecimalFormat("#0.00")
-          // Calculating tempreture in fehrenheit
-          val fhTemp = dec.format(celTemp * 9 / 5 + 32)
-          return String.valueOf(celTemp).concat("c,").concat(String.valueOf(fhTemp)).concat("f")
-        }else{
-          return NULL_VALUE + "," + NULL_VALUE
-
-        }
-      case None => return NULL_VALUE + "," + NULL_VALUE
-    }
-
-  }
-  def main(args: Array[String]): Unit = {
-    //Providing configuration
-    val conf = new SparkConf().setAppName("ghcnd").setMaster("local")
-
-    // pass the SparkContext
-    val sc = new SparkContext(conf)
-
-    //creating a rdd
-    val stationRDD = sc.textFile(INPUT_STATION_FILE)
-    val inputDLYRDD = sc.textFile(INPUT_DLY_FILE)
-
-    val elementValues = Seq("TOBS", "PRCP", "SNOW", "SNWD", "ACMC", "ACMH", "ACSC", "ACSH", "AWDR", "AWND", "DAEV", "DAPR", "DATN", "DATX", "DAWM", "DWPR", "EVAP", "FMTM", "FRGB", "FRGT", "FRTH", "GAHT", "MDEV", "MDPR", "MDSF", "MDTN", "MDTX", "MDWM", "MNPN", "MXPN", "PGTM", "PSUN", "SN01", "SN02", "SN03", "SN04", "SN05", "SN06", "SN07", "SN11", "SN12", "SN13", "SN14", "SN15", "SN16", "SN17", "SN21", "SN22", "SN23", "SN24", "SN25", "SN26", "SN27", "SN31", "SN32", "SN33", "SN34", "SN35", "SN36", "SN37", "SN41", "SN42", "SN43", "SN44", "SN45", "SN46", "SN47", "SN51", "SN52", "SN53", "SN54", "SN55", "SN56", "SN57", "SN61", "SN62", "SN63", "SN64", "SN65", "SN66", "SN67", "SN71", "SN72", "SN73", "SN74", "SN75", "SN76", "SN77", "SN81", "SN82", "SN83", "SN84", "SN85", "SN86", "SN87", "SX01", "SX02", "SX03", "SX04", "SX05", "SX06", "SX07", "SX11", "SX12", "SX13", "SX14", "SX15", "SX16", "SX17", "SX21", "SX22", "SX23", "SX24", "SX25", "SX26", "SX27", "SX31", "SX32", "SX33", "SX34", "SX35", "SX36", "SX37", "SX41", "SX42", "SX43", "SX44", "SX45", "SX46", "SX47", "SX51", "SX52", "SX53", "SX54", "SX55", "SX56", "SX57", "SX61", "SX62", "SX63", "SX64", "SX65", "SX66", "SX67", "SX71", "SX72", "SX73", "SX74", "SX75", "SX76", "SX77", "SX81", "SX82", "SX83", "SX84", "SX85", "SX86", "SX87", "TSUN", "WDF1", "WDF2", "WDF5", "WDFG", "WDFI", "WDFM", "WDMV", "WESD", "WESF", "WSF1", "WSF2", "WSF5", "WSFG", "WSFI", "WSFM", "WT00", "WT01", "WT02", "WT03", "WT04", "WT05", "WT06", "WT07", "WT08", "WT09", "WT10", "WT11", "WT12", "WT13", "WT14", "WT15", "WT16", "WT17", "WT18", "WT19", "WT20", "WT21", "WT22", "WV01", "WV03", "WV07", "WV18", "WV20")
-    //val blankSeq = 0 to 30 map (x => "\\N")
-    var idIndex = 0
-
     // Parse the station file and emit the output pair rdd with id as key and rest of cols as value
-    val stationPairRDD = stationRDD.map(line1 => line1.split(" ")).map { array => {
-      while (array(idIndex).equals("")) {
-        idIndex = idIndex + 1
+    val stationPairRDD = stationRDD.map { x => {
 
-      }
-      var latitudeIndex = idIndex + 1
-      while (array(latitudeIndex).equals("")) {
-        latitudeIndex = latitudeIndex + 1
-      }
-      var longitutudeIndex = latitudeIndex + 1
-
-      while (array(longitutudeIndex).equals("")) {
-        longitutudeIndex = longitutudeIndex + 1
-      }
-      (array(idIndex), (array(latitudeIndex), array(longitutudeIndex)))
+      (x.substring(0, 11), (x.substring(0, 11),x.substring(12, 20),x.substring(38,40),x.substring(41, 71),
+                            x.substring(80, 85)))
     }
     }
 
@@ -81,7 +12,7 @@ object ExceStructRdd {
       val year = x.substring(11, 15)
       val month = x.substring(15, 17)
       val element = x.substring(17, 21)
-      val values = 0 to 30 map { i => x.substring(8 * i + 22, 8 * i + 26) }
+      val values = 0 to 30 map { i => x.substring(8 * i + 22, 8 * i + 27) }
       (id, (year, month, element, values))
     }
 
@@ -89,7 +20,7 @@ object ExceStructRdd {
     // joining both rdd
     val joined = stationPairRDD.join(inputDLYPairRDD)
     // Creating pair id with (id,year,month,latitude,longitude) as Key and (Element Name , list of values for each date) as Value
-    val pairrdd = joined.map(x => ((x._1, x._2._2._1, x._2._2._2, x._2._1._1, x._2._1._2), (x._2._2._3, x._2._2._4)))
+    val pairrdd = joined.map(x => ((x._1, x._2._2._1, x._2._2._2, x._2._1._1, x._2._1._2,x._2._1._3,x._2._1._4,x._2._1._5), (x._2._2._3, x._2._2._4)))
     // Grouping to get all the element values per id,year,month,latitude,longitude
     val grouped = pairrdd.groupByKey()
 
@@ -98,8 +29,16 @@ object ExceStructRdd {
         // Defining values Map which will have Element name as Key and list of values for a particular month as value
         val valuesMap = scala.collection.mutable.Map[String, IndexedSeq[String]]()
         x._2.foreach(y => valuesMap += (y._1 -> y._2))
+        import java.util.Calendar
+        import java.util.GregorianCalendar
+        val weekMap = Map(1 -> Calendar.JANUARY,2 -> Calendar.FEBRUARY,3 -> Calendar.MARCH,
+          4 -> Calendar.APRIL,5 -> Calendar.MAY,6 -> Calendar.JUNE,7 -> Calendar.JULY,8 -> Calendar.AUGUST,
+          9 -> Calendar.SEPTEMBER,10 -> Calendar.OCTOBER,11 -> Calendar.NOVEMBER,12 -> Calendar.DECEMBER)
+        val mycal = new GregorianCalendar(x._1._2.toInt, weekMap.getOrElse(x._1._3.toInt,Calendar.JANUARY), 1)
+        val daysInMonth = mycal.getActualMaximum(Calendar.DAY_OF_MONTH)
+
         // Looping from 1 to 31 which will act as dates in the output
-        1 to 31 map { y =>
+        1 to daysInMonth map { y =>
           // Creating the output row String
           (
             // Adding ID
@@ -110,6 +49,12 @@ object ExceStructRdd {
             .concat(",").concat(x._1._4)
               // Adding Longitude
             .concat(",").concat(x._1._5)
+            // Adding State
+              .concat(",").concat(x._1._6)
+              // Adding Name
+              .concat(",").concat(x._1._7)
+              // Adding WMO ID
+              .concat(",").concat(x._1._8)
             // Calling getTempratures method to get TMAX in celcius and fahrenheit for the particular day
             .concat(",").concat(getTemperatures("TMAX",valuesMap,y-1))
             // Calling getTempratures method to get TMIN in celcius and fahrenheit
@@ -119,8 +64,3 @@ object ExceStructRdd {
         }
       }
     }
-    flatted_value.foreach(println)
-    //flatted_value.saveAsTextFile(OUTPUT_PATH + "/part_dt=" + format.format(new java.util.Date()))
-
-
-  }}
