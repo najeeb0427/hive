@@ -1,9 +1,9 @@
-    val state_zip = sc.textFile("statezipfilepath").map(x => x.split(",")).map(x => (x(1),(x(0),x(3))))
+    val state_zip = sc.textFile("statezipfilepath").map(x => x.split(",")).map(x => ((x(5),x(6)),(x(0),x(3))))
 	
 	// Parse the station file and emit the output pair rdd with id as key and rest of cols as value
     val stationPairRDD = stationRDD.map { x => {
 
-      (x.substring(38,40),(x.substring(0, 11), (x.substring(12, 20),x.substring(21, 30),x.substring(38,40))))
+      ((x.substring(12, 20),x.substring(21, 30)),(x.substring(0, 11), x.substring(12, 20),x.substring(21, 30),x.substring(38,40)))
     }
     }.join(state_zip).map(x => (x._2._1._1,(x._2._1._2,x._2._1._3,x._2._1._4,x._2._2._1,x._2._2._2)))
 
